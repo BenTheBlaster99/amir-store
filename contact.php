@@ -1,4 +1,5 @@
 <?php
+require_once 'db.php';
 $message_sent = false;
 $error_message = '';
 
@@ -8,8 +9,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['contact_submit'])) {
     $message = htmlspecialchars($_POST['contact_message']);
     
     if (!empty($name) && !empty($email) && !empty($message)) {
-        // Email sending or database storage will be added later
-        $message_sent = true;
+        try {
+            $stmt = $pdo->prepare("INSERT INTO contacts (name, email, message) VALUES (?, ?, ?)");
+            $stmt->execute([$name, $email, $message]);
+            $message_sent = true;
+        } catch (PDOException $e) {
+            $error_message = 'Erreur lors de l\'enregistrement du message. Veuillez réessayer plus tard.';
+        }
     } else {
         $error_message = 'Veuillez remplir tous les champs.';
     }
